@@ -58,8 +58,8 @@ async function example(email, password) {
             await driver.wait(until.elementLocated(By.xpath('//*[@id="app"]/div[1]/section/section/div[1]/div[3]/ul/li[1]')), 12000);
 
             let cookies = await driver.manage().getCookies();
-            console.log(JSON.stringify(cookies, null, 2));
-            return cookies;
+            // console.log(JSON.stringify(cookies, null, 2));
+            return JSON.stringify(cookies, null, 2);
         } else if (statusCode === 500) {
             console.log(` returned a 500 status code`);
             return 500;
