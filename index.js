@@ -1,13 +1,17 @@
 
 
 // Define a GET endpoint at the root path
-const chrome = require('selenium-webdriver/chrome');
-// const firefox = require('selenium-webdriver/firefox');
+//const chrome = require('selenium-webdriver/chrome');
+const firefox = require('selenium-webdriver/firefox');
 const { Builder, By, Key, until } = require('selenium-webdriver');
 const express = require('express'); // Import Express library
 const app = express(); // Create an instance of the Express application
 const cors = require('cors'); // Import the cors middleware
 const bodyParser = require('body-parser');
+
+const axios = require('axios');
+
+
 
 
 // parse application/x-www-form-urlencoded
@@ -17,24 +21,30 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 async function example(email, password) {
-    let options = new chrome.Options();
-    let driver = await new Builder()
-      .forBrowser('chrome')
-      .setChromeOptions(options)
-      .build();
+    //  let options = new chrome.Options();
+    //let driver = await new Builder()
+    //.forBrowser('chrome')
+    // .setChromeOptions(options)
+    //.build();
 
-    // let options = new firefox.Options();
-    // let driver = await new Builder()
-    //     .forBrowser('firefox')
-    //     .setFirefoxOptions(options)
-    //     .build();
+    let options = new firefox.Options();
+    let driver = await new Builder()
+        .forBrowser('firefox')
+        .setFirefoxOptions(options)
+        .build();
 
     try {
         await driver.get('http://192.168.1.80:3000');
-        const statusCode = await driver.executeScript('return window.performance.getEntries()[0].responseStatus;');
-        //   statusCode = 200;
+        await driver.wait(until.titleContains('Chatwoot'), 12000);
+
+        let statusCode = 0;
+        await axios.get('http://192.168.1.80:3000').then(response => {
+            statusCode = response.status;
+        }).catch(error => {
+            console.error(error);
+        });
+
         if (statusCode === 200) {
-            await driver.wait(until.titleContains('Chatwoot'), 12000);
             let emailInput = await driver.findElement(By.xpath('//*[@id="app"]/main/section[2]/div/div[1]/form/label[1]/input'));
             await emailInput.sendKeys(email);
             console.log('sending email')
@@ -55,7 +65,7 @@ async function example(email, password) {
             return 500;
         } else {
             console.log(` returned a status code of ${statusCode}`);
-            return statusCode;
+            return "status Code" + statusCode;
         }
     } finally {
         await driver.quit();
