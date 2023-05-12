@@ -2,6 +2,7 @@
 
 // Define a GET endpoint at the root path
 const chrome = require('selenium-webdriver/chrome');
+// const firefox = require('selenium-webdriver/firefox');
 const { Builder, By, Key, until } = require('selenium-webdriver');
 const express = require('express'); // Import Express library
 const app = express(); // Create an instance of the Express application
@@ -21,39 +22,45 @@ async function example(email, password) {
       .forBrowser('chrome')
       .setChromeOptions(options)
       .build();
-  
+
+    // let options = new firefox.Options();
+    // let driver = await new Builder()
+    //     .forBrowser('firefox')
+    //     .setFirefoxOptions(options)
+    //     .build();
+
     try {
-      await driver.get('http://192.168.1.80:3000');
-      const statusCode = await driver.executeScript('return window.performance.getEntries()[0].responseStatus;');
-    //   statusCode = 200;
-      if (statusCode === 200) {
-        await driver.wait(until.titleContains('Chatwoot'), 12000);
-        let emailInput = await driver.findElement(By.xpath('//*[@id="app"]/main/section[2]/div/div[1]/form/label[1]/input'));
-        await emailInput.sendKeys(email);
-        console.log('sending email')
-  
-        let passwordInput = await driver.findElement(By.xpath('//*[@id="app"]/main/section[2]/div/div[1]/form/label[2]/input'));
-        await passwordInput.sendKeys(password);
-  
-        console.log('sending password')
-        await passwordInput.sendKeys(Key.RETURN);
-  
-        await driver.wait(until.elementLocated(By.xpath('//*[@id="app"]/div[1]/section/section/div[1]/div[3]/ul/li[1]')), 12000);
-  
-        let cookies = await driver.manage().getCookies();
-        console.log(JSON.stringify(cookies, null, 2));
-        return cookies;
-      } else if (statusCode === 500) {
-        console.log(` returned a 500 status code`);
-        return 500;
-      } else {
-        console.log(` returned a status code of ${statusCode}`);
-        return statusCode;
-      }
+        await driver.get('http://192.168.1.80:3000');
+        const statusCode = await driver.executeScript('return window.performance.getEntries()[0].responseStatus;');
+        //   statusCode = 200;
+        if (statusCode === 200) {
+            await driver.wait(until.titleContains('Chatwoot'), 12000);
+            let emailInput = await driver.findElement(By.xpath('//*[@id="app"]/main/section[2]/div/div[1]/form/label[1]/input'));
+            await emailInput.sendKeys(email);
+            console.log('sending email')
+
+            let passwordInput = await driver.findElement(By.xpath('//*[@id="app"]/main/section[2]/div/div[1]/form/label[2]/input'));
+            await passwordInput.sendKeys(password);
+
+            console.log('sending password')
+            await passwordInput.sendKeys(Key.RETURN);
+
+            await driver.wait(until.elementLocated(By.xpath('//*[@id="app"]/div[1]/section/section/div[1]/div[3]/ul/li[1]')), 12000);
+
+            let cookies = await driver.manage().getCookies();
+            console.log(JSON.stringify(cookies, null, 2));
+            return cookies;
+        } else if (statusCode === 500) {
+            console.log(` returned a 500 status code`);
+            return 500;
+        } else {
+            console.log(` returned a status code of ${statusCode}`);
+            return statusCode;
+        }
     } finally {
-      await driver.quit();
+        await driver.quit();
     }
-  };
+};
 
 
 
@@ -64,16 +71,17 @@ console.log('started ');
 
 // Define a POST  endpoint at the root path
 app.post('/', (req, res) => {
-    email=req.body.email;
-    password=req.body.password;
-    example(email,password)
+    email = req.body.email;
+    password = req.body.password;
+    example(email, password)
         .then((cookies) => {
-            if(cookies==500){
+            if (cookies == 500) {
                 res.sendStatus('500');
-            }else{  
-            console.log(cookies);
-            res.send(cookies);
-            return cookies;}
+            } else {
+                console.log(cookies);
+                res.send(cookies);
+                return cookies;
+            }
         })
         .catch((error) => {
             console.error('Error in example function:', error);
